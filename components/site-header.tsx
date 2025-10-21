@@ -12,7 +12,8 @@ interface SiteHeaderArguments {
   setCasesToday?: React.Dispatch<React.SetStateAction<CasesInterface[] | null>> | null
 }
 
-export function SiteHeader({ setCasesToday }: SiteHeaderArguments) {
+export function SiteHeader({ setCasesToday }: any) {
+  console.log("Rendering site header")
   async function handleExcelFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
