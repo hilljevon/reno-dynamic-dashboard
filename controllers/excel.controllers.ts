@@ -32,7 +32,7 @@ function getCurrentDate(cell: any) {
 }
 
 export function parseExcel(cases: any) {
-    const columnHeaderIndexes: string[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG"];
+    const columnHeaderIndexes: string[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK"];
     const caseCensus = []
     const lastCell = cases["!ref"]
     const rowCount = extractRowCount(lastCell)
@@ -85,8 +85,8 @@ export function parseExcel(cases: any) {
     // Iterates each column to get the respective column index. 
     for (let columnHeader of columnHeaderIndexes) {
         const columnKey = `${columnHeader}2`
-        const currentColumnHeaderName = cases[columnKey]["v"]
-        if (currentColumnHeaderName in allColumnNames) {
+        const currentColumnHeaderName = cases[columnKey]["v"] ? cases[columnKey]["v"] : null
+        if (currentColumnHeaderName && currentColumnHeaderName in allColumnNames) {
             allColumnNames[currentColumnHeaderName] = columnHeader
         }
     }

@@ -36,6 +36,7 @@ const MainDashboard = () => {
             setCategorizedCases(categorized)
         }
     }, [casesToday])
+    console.log("Categorized cases here", categorizedCases)
     return (
         <>
             <SiteHeader setCasesToday={setCasesToday} />
