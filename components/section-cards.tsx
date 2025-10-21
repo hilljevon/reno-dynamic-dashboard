@@ -1,3 +1,4 @@
+"use client"
 import { IconTrendingDown, IconTrendingDown2, IconTrendingUp } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
