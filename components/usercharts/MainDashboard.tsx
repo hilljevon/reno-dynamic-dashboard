@@ -3,15 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { AppSidebar } from "@/components/app-sidebar"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
 import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
 import { CMBarChart } from "@/components/usercharts/CMBarChart"
 import { AnticipatedDispoBarChart } from "@/components/usercharts/AnticipatedDispoBarChart"
-import { ROPieChart } from "@/components/usercharts/ROPieChart"
 import { TopFacilitiesBarChart } from "@/components/usercharts/TopFacilitiesBarChart"
 import {
     Accordion,
@@ -23,6 +20,9 @@ import data from "@/lib/data.json"
 import { UserFiltersField } from "@/components/usercharts/UserFiltersField"
 import { CasesInterface, FullCategorizedInterface } from '@/controllers/interfaces'
 import { caseBreakdown } from '@/controllers/excel.controllers'
+import { SectionCards } from '../section-cards'
+import { SiteHeader } from '../site-header'
+import { ROPieChart } from './ROPieChart'
 
 
 const MainDashboard = () => {
@@ -38,7 +38,7 @@ const MainDashboard = () => {
     console.log("Categorized cases here", categorizedCases)
     return (
         <>
-            <SiteHeader casesToday={casesToday} setCasesToday={setCasesToday} />
+            <SiteHeader setCasesToday={setCasesToday} />
             <div className="flex flex-1 flex-col">
                 <div className="@container/main flex flex-1 flex-col gap-2">
                     {categorizedCases && (

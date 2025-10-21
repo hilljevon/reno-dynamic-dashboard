@@ -9,11 +9,10 @@ import { useState } from "react";
 import { Input } from "./ui/input";
 import { CasesInterface } from "@/controllers/interfaces";
 interface SiteHeaderArguments {
-  casesToday: CasesInterface[] | null,
-  setCasesToday: React.Dispatch<React.SetStateAction<CasesInterface[] | null>>
+  setCasesToday?: React.Dispatch<React.SetStateAction<CasesInterface[] | null>> | null
 }
 
-export function SiteHeader({ casesToday, setCasesToday }: SiteHeaderArguments) {
+export function SiteHeader({ setCasesToday }: SiteHeaderArguments) {
   async function handleExcelFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -24,7 +23,7 @@ export function SiteHeader({ casesToday, setCasesToday }: SiteHeaderArguments) {
         const workbook = XLSX.read(binaryData, { type: "binary" });
         const ccrCaseWorksheet = workbook["Sheets"]["Details"]
         const { caseCensus, allColumnNames } = parseExcel(ccrCaseWorksheet)
-        if (caseCensus) {
+        if (caseCensus && setCasesToday) {
           setCasesToday(caseCensus)
           toast.success("Excel sheet read correctly. Cases parsed.")
         }
