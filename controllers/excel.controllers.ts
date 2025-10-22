@@ -7,9 +7,10 @@ const cmaCodes = [
     "E779662-Amy.Thach",
     "M683463-Jacqueline.Apelo",
     "Y703743-Julian.Ames",
-    "M520802-Desiree.Pene",
+    "M520802-Desiree.Gomez",
     "D447227-Cristina.Limchico",
-    "G850452-Madelyne.Soto"
+    "G850452-Madelyne.Soto",
+
 ]
 
 function extractRowCount(range: string): number {
