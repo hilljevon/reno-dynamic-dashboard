@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sidebar"
 import { CMBarChart } from "@/components/usercharts/CMBarChart"
 import { AnticipatedDispoBarChart } from "@/components/usercharts/AnticipatedDispoBarChart"
-import { TopFacilitiesBarChart } from "@/components/usercharts/TopFacilitiesBarChart"
+import { MedicalHomeBarChart } from "@/components/usercharts/MedicalHomeBarChart"
 import {
     Accordion,
     AccordionContent,
@@ -22,7 +22,7 @@ import { CasesInterface, FullCategorizedInterface } from '@/controllers/interfac
 import { caseBreakdown } from '@/controllers/excel.controllers'
 import { SectionCards } from '../section-cards'
 import { SiteHeader } from '../site-header'
-import { ROPieChart } from './ROPieChart'
+import { ROBarChart } from './ROBarChart'
 
 
 const MainDashboard = () => {
@@ -45,9 +45,9 @@ const MainDashboard = () => {
                             <SectionCards categorizedCases={categorizedCases} />
                             {/* Mid section charts */}
                             <div className="px-4 lg:px-6 grid grid-cols-3 gap-4">
-                                <ROPieChart casesPerReviewOutcome={categorizedCases.casesPerReviewOutcome} />
+                                <ROBarChart casesPerReviewOutcome={categorizedCases.casesPerReviewOutcome} />
                                 <AnticipatedDispoBarChart casesPerAnticipatedDispo={categorizedCases.casesPerAnticipatedDispo} />
-                                <TopFacilitiesBarChart casesPerFacility={categorizedCases.casesPerMedicalHome} />
+                                <MedicalHomeBarChart casesPerFacility={categorizedCases.casesPerMedicalHome} />
                             </div>
                             {/* CM Bar Chart */}
                             <div className="px-4 lg:px-6 grid grid-cols-1 gap-4">

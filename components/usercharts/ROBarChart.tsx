@@ -27,7 +27,7 @@ interface ReviewOutcomeArgument {
     casesPerReviewOutcome: SingleCategoryInterface | null
 }
 
-export function ROPieChart({ casesPerReviewOutcome }: ReviewOutcomeArgument) {
+export function ROBarChart({ casesPerReviewOutcome }: ReviewOutcomeArgument) {
     const [rechartData, setRechartData] = useState<RechartDataConversionInterface>()
     useEffect(() => {
         if (casesPerReviewOutcome) {

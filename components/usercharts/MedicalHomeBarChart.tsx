@@ -31,7 +31,7 @@ interface ReviewOutcomeArgument {
 interface AnticipatedDispoArguments {
     casesPerFacility: SingleCategoryInterface | null
 }
-export function TopFacilitiesBarChart({ casesPerFacility }: AnticipatedDispoArguments) {
+export function MedicalHomeBarChart({ casesPerFacility }: AnticipatedDispoArguments) {
     const [rechartData, setRechartData] = useState<RechartDataConversionInterface>()
     useEffect(() => {
         if (casesPerFacility) {
