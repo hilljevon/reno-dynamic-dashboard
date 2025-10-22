@@ -36,7 +36,7 @@ export function calculateNewSectionCardScores(categorizedCases: FullCategorizedI
     return newScores
 }
 // blue and purple color palette (Sisu (Personnage Disney) + The Usual Suspects + Purple and Blues)
-const colorHexCodes = [
+const colorHexCodes1 = [
     "#ace8f2",
     "#1c5d89",
     "#4ebcff",
@@ -53,7 +53,44 @@ const colorHexCodes = [
     "#1c46ac",
     "#7044e1"
 ]
+const colorHexCodes = [
+    // Light Teals & Aquas
+    "#ace8f2",
+    "#a9edf1",
+    "#b4f1ec",
+    "#9cd9e3",
+    "#8ed2db",
+
+    // Deep & Muted Blues
+    "#1c5d89",
+    "#004078",
+    "#177ecb",
+    "#1c46ac",
+    "#216778",
+    "#276a8d",
+    "#3a82a0",
+
+    // Soft Purples & Lilacs
+    "#7347a9",
+    "#7044e1",
+    "#885bfe",
+    "#9b77ff",
+    "#b76bff",
+    "#c49aff",
+
+    // Blue-Greens & Steel tones
+    "#4ebcff",
+    "#71a2c4",
+    "#5bbad5",
+    "#3f92af",
+    "#076776",
+
+    // Neutrals / Balancing Shades
+    "#d4e4f7",
+    "#b8c7e0"
+];
 export function convertToRechartStructure(caseCategoryObject: SingleCategoryInterface) {
+
     const topFac = Object.keys(caseCategoryObject).reduce((a, b) => {
         return caseCategoryObject[a].length > caseCategoryObject[b].length ? a : b
     })
@@ -65,12 +102,12 @@ export function convertToRechartStructure(caseCategoryObject: SingleCategoryInte
     } satisfies ChartConfig
     const chartData: ChartDataInterface[] = []
     const topFacCount = caseCategoryObject[topFac].length;
-    // Here I am looping through all review outcome strings to create a chart config + data conversion that matches our rechart schema
+    // Here I am looping through all category strings to create a chart config + data conversion that matches our rechart schema
     Object.keys(caseCategoryObject).forEach((key, idx) => {
         const fill = key.replace(/\s+/g, "")
         chartConfig[fill] = { label: key, color: colorHexCodes[idx] }
         chartData.push(
-            { nameKey: key, dataKey: caseCategoryObject[key].length, fill: colorHexCodes[idx] }
+            { nameKey: key, dataKey: caseCategoryObject[key].length, fill: colorHexCodes[idx], fullData: caseCategoryObject[key], key: key }
         )
     })
     const fullRechartData = { topFac, topFacCount, chartData, chartConfig }

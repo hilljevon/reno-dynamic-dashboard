@@ -9,6 +9,7 @@ const cmaCodes = [
     "Y703743-Julian.Ames",
     "M520802-Desiree.Pene",
     "D447227-Cristina.Limchico",
+    "G850452-Madelyne.Soto"
 ]
 
 function extractRowCount(range: string): number {
@@ -85,9 +86,11 @@ export function parseExcel(cases: any) {
     // Iterates each column to get the respective column index. 
     for (let columnHeader of columnHeaderIndexes) {
         const columnKey = `${columnHeader}2`
-        const currentColumnHeaderName = cases[columnKey]["v"] ? cases[columnKey]["v"] : null
-        if (currentColumnHeaderName && currentColumnHeaderName in allColumnNames) {
-            allColumnNames[currentColumnHeaderName] = columnHeader
+        if (cases[columnKey]) {
+            const currentColumnHeaderName = cases[columnKey]["v"] ? cases[columnKey]["v"] : null
+            if (currentColumnHeaderName && currentColumnHeaderName in allColumnNames) {
+                allColumnNames[currentColumnHeaderName] = columnHeader
+            }
         }
     }
     // Iterating each case row

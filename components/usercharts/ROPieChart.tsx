@@ -16,7 +16,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { ChartConfigInterface, ChartDataInterface, SingleCategoryInterface } from "@/controllers/interfaces"
+import { ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
 import { useEffect, useState } from "react"
 import { convertToRechartStructure } from "@/controllers/rechart.controllers"
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
@@ -26,12 +26,7 @@ import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
 interface ReviewOutcomeArgument {
     casesPerReviewOutcome: SingleCategoryInterface | null
 }
-interface RechartDataConversionInterface {
-    chartConfig: ChartConfigInterface,
-    chartData: ChartDataInterface[],
-    topFac: string,
-    topFacCount: number
-}
+
 export function ROPieChart({ casesPerReviewOutcome }: ReviewOutcomeArgument) {
     const [rechartData, setRechartData] = useState<RechartDataConversionInterface>()
     useEffect(() => {

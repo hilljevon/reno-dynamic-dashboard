@@ -7,7 +7,6 @@ import {
 import MainDashboard from "@/components/usercharts/MainDashboard"
 
 export default function Page() {
-  console.log("Rendering page.tsx")
   return (
     <SidebarProvider
       style={

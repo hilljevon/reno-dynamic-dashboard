@@ -63,5 +63,14 @@ export interface ChartConfigInterface {
 export interface ChartDataInterface {
     nameKey: string,
     dataKey: number,
-    fill: string
+    fill: string,
+    fullData: CasesInterface[],
+    key: string
+}
+
+export interface RechartDataConversionInterface {
+    chartConfig: ChartConfigInterface,
+    chartData: ChartDataInterface[],
+    topFac: string,
+    topFacCount: number
 }

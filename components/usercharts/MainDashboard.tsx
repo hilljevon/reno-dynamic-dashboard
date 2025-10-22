@@ -26,7 +26,6 @@ import { ROPieChart } from './ROPieChart'
 
 
 const MainDashboard = () => {
-    console.log("Rendering main dashboard")
     const [casesToday, setCasesToday] = useState<CasesInterface[] | null>(null)
     const [categorizedCases, setCategorizedCases] = useState<FullCategorizedInterface | null>(null)
     // each time the file is updated with a new case assignment, this use effect runs and new categorized cases are generated.
@@ -36,7 +35,6 @@ const MainDashboard = () => {
             setCategorizedCases(categorized)
         }
     }, [casesToday])
-    console.log("Categorized cases here", categorizedCases)
     return (
         <>
             <SiteHeader setCasesToday={setCasesToday} />
@@ -53,7 +51,9 @@ const MainDashboard = () => {
                             </div>
                             {/* CM Bar Chart */}
                             <div className="px-4 lg:px-6 grid grid-cols-1 gap-4">
-                                <CMBarChart casesPerRN={categorizedCases.casesPerRN} casesPerCma={categorizedCases.casesPerCma} />
+                                {categorizedCases.casesPerRN && (
+                                    <CMBarChart casesPerRN={categorizedCases.casesPerRN} casesPerCma={categorizedCases.casesPerCma} />
+                                )}
                             </div>
                             {/* Accordion Filters */}
                             <div className="grid grid-cols-1 gap-4 px-4 lg:px-6">
