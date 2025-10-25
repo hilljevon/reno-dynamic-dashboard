@@ -16,11 +16,12 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
+import { BarClickInterface, ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
 import { useEffect, useState } from "react"
 import { convertToRechartStructure } from "@/controllers/rechart.controllers"
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
 import { TrendingUp } from "lucide-react"
+import CustomBarDrawer from "./CustomBarDrawer"
 
 
 
@@ -33,6 +34,8 @@ interface AnticipatedDispoArguments {
 }
 export function AnticipatedDispoBarChart({ casesPerAnticipatedDispo }: AnticipatedDispoArguments) {
     const [rechartData, setRechartData] = useState<RechartDataConversionInterface>()
+    const [selectedBarData, setSelectedBarData] = useState<BarClickInterface | null>(null)
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     useEffect(() => {
         if (casesPerAnticipatedDispo) {
             const convertedRechartData: RechartDataConversionInterface = convertToRechartStructure(casesPerAnticipatedDispo)
@@ -50,37 +53,55 @@ export function AnticipatedDispoBarChart({ casesPerAnticipatedDispo }: Anticipat
             </CardHeader>
             <CardContent>
                 {rechartData && (
-                    <ChartContainer config={rechartData.chartConfig}>
-                        <BarChart
-                            accessibilityLayer
-                            data={rechartData.chartData}
-                            margin={{
-                                top: 30,
-                            }}
-                        >
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                                className="text-xs"
-                                dataKey="nameKey"
-                                tickLine={false}
-                                tickMargin={14}
-                                axisLine={false}
-                                tickFormatter={(value) => value.slice(0, 6)}
-                            />
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent />}
-                            />
-                            <Bar dataKey="dataKey" fill="var(--color-dataKey)" radius={4}>
-                                <LabelList
-                                    position="top"
-                                    offset={6}
-                                    className="fill-foreground"
-                                    fontSize={12}
+                    <>
+                        <ChartContainer config={rechartData.chartConfig}>
+                            <BarChart
+                                accessibilityLayer
+                                data={rechartData.chartData}
+                                margin={{
+                                    top: 30,
+                                }}
+                            >
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    className="text-xs"
+                                    dataKey="nameKey"
+                                    tickLine={false}
+                                    tickMargin={14}
+                                    axisLine={false}
+                                    tickFormatter={(value) => value.slice(0, 6)}
                                 />
-                            </Bar>
-                        </BarChart>
-                    </ChartContainer>
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent />}
+                                />
+                                <Bar
+                                    dataKey="dataKey"
+                                    fill="var(--color-dataKey)"
+                                    radius={4}
+                                    onClick={(barData: BarClickInterface) => {
+                                        const fullData = barData?.fullData
+                                        if (!fullData) return;
+                                        setSelectedBarData(barData);
+                                        setIsDrawerOpen(true);
+                                    }}
+                                >
+                                    <LabelList
+                                        position="top"
+                                        offset={6}
+                                        className="fill-foreground"
+                                        fontSize={12}
+                                    />
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
+                        <CustomBarDrawer
+                            isDrawerOpen={isDrawerOpen}
+                            setIsDrawerOpen={setIsDrawerOpen}
+                            selectedBarData={selectedBarData}
+                        />
+                    </>
+
                 )}
             </CardContent>
             <CardFooter className="flex-col items-start gap-2 text-sm">

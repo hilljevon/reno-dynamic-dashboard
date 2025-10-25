@@ -74,3 +74,20 @@ export interface RechartDataConversionInterface {
     topFac: string,
     topFacCount: number
 }
+
+export interface BarClickInterface {
+    background: any,
+    dataKey: number,
+    fill: string,
+    fullData: CasesInterface[],
+    height: number,
+    key: string,
+    nameKey: string,
+    payload: any,
+    tooltipPayload: any,
+    tooltipPosition: any,
+    value: number,
+    width: number,
+    x: number,
+    y: number
+}

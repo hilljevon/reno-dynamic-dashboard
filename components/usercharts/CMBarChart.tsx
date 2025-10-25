@@ -16,7 +16,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { CasesInterface, ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
+import { BarClickInterface, CasesInterface, ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
 import { convertToRechartStructure } from "@/controllers/rechart.controllers"
 import { Button } from "../ui/button"
 import {
@@ -38,6 +38,7 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer"
+import CustomBarDrawer from "./CustomBarDrawer"
 
 interface CMArgumentInterface {
     casesPerRN: SingleCategoryInterface | null,
@@ -50,40 +51,34 @@ interface UnfilteredRnCMADataInterface {
 }
 interface TotalCountInterface {
     RN: number,
-    CMA: number
+    CMA: number,
+    rnQty: number,
+    cmaQty: number
 }
 interface ServiceCodeInterface {
     [key: string]: number
 }
-interface BarClickInterface {
-    background: any,
-    dataKey: number,
-    fill: string,
-    fullData: CasesInterface[],
-    height: number,
-    key: string,
-    nameKey: string,
-    payload: any,
-    tooltipPayload: any,
-    tooltipPosition: any,
-    value: number,
-    width: number,
-    x: number,
-    y: number
-}
+
 export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
     if (!casesPerRN || !casesPerCma) return null
+    console.log("Cases per RN")
+    // Current data either has all RN chart data or CMA chart data that will be rendered in bar chart. dynamically changed in use effect
     const [currentData, setCurrentData] = React.useState<ChartDataInterface[]>()
+    // chart config is rendered with either cma or rn chart configuration. dynamically changed in use effect.
     const [currentChartConfig, setCurrentChartConfig] = React.useState<any>()
+    // this contains our original RN chart data. allows for quick retoggle between cma and rn chart. same applies to rechartCmaData
     const [rechartRnData, setRechartRnData] = React.useState<RechartDataConversionInterface>()
     const [rechartCmaData, setRechartCmaData] = React.useState<RechartDataConversionInterface>()
-    const [selectedData, setSelectedData] = React.useState<BarClickInterface | null>(null);
+    // bar data that is sent to Drawer component
+    const [selectedBarData, setSelectedBarData] = React.useState<BarClickInterface | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
-    const [totals, setTotals] = React.useState<TotalCountInterface>({ RN: 0, CMA: 0 })
+    // total count for RN and CMA cases
+    const [totals, setTotals] = React.useState<TotalCountInterface>({ RN: 0, CMA: 0, rnQty: 0, cmaQty: 0 })
     // determines which bar chart is active
     const [activeChart, setActiveChart] = React.useState<string>("RN")
+    // before altering rn and cma data through filters, the original data is sent here. may not be needed
     const [unfilteredRnCMAData, setUnfilteredRnCMAData] = React.useState<UnfilteredRnCMADataInterface>({ RN: null, CMA: null })
-    // here we need to generate all relevant RN analytics from the cases
+    // Generates RN analytics for tooltip
     const getRnAnalytics = (cases: CasesInterface[]) => {
         const serviceCodes: ServiceCodeInterface = {}
         for (let cs of cases) {
@@ -98,6 +93,7 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
         );
         return sortedServiceCodes
     }
+    // Generates CMA analytics for tooltip
     const getCMAAnalytics = (cases: CasesInterface[]) => {
         const anticipatedDispos: ServiceCodeInterface = {}
         for (let cs of cases) {
@@ -112,7 +108,10 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
         );
         return sortedAnticipatedDispos
     }
+    // filters our RN and CMA data further after data > rechart conversion
     const filterData = (rechartRnData: ChartDataInterface[], rechartCMAData: ChartDataInterface[]) => {
+        const rnQty = Object.keys(casesPerRN).length
+        const cmaQty = Object.keys(casesPerCma).length
         const newRnData = rechartRnData
             .filter(item => item.nameKey !== 'OTHER' && item.dataKey < 30)
             .map(item => ({
@@ -134,12 +133,13 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
             .sort((a, b) => b.dataKey - a.dataKey);
         const RNTotal = newRnData.reduce((sum, item) => sum + item.dataKey, 0);
         const CMATotal = newCmaData.reduce((sum, item) => sum + item.dataKey, 0);
-        setTotals({ RN: RNTotal, CMA: CMATotal })
+        setTotals({ RN: RNTotal, CMA: CMATotal, rnQty: rnQty, cmaQty: cmaQty })
         return { newRnData, newCmaData }
     }
     // calculates totals for each chart button
     React.useEffect(() => {
         if (casesPerRN && casesPerCma) {
+
             const unfilteredRnRechartData: RechartDataConversionInterface = convertToRechartStructure(casesPerRN)
             const unfilteredCMARechartData: RechartDataConversionInterface = convertToRechartStructure(casesPerCma)
             // this stores our original data
@@ -153,6 +153,7 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
             setRechartCmaData(unfilteredCMARechartData)
         }
     }, [casesPerRN, casesPerCma])
+    // everytime RN and CMA bar chart button toggled
     React.useEffect(() => {
         if (activeChart == "RN") {
             setCurrentData(rechartRnData?.chartData)
@@ -166,13 +167,24 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
         <Card className="py-0">
             <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
                 <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
-                    <CardTitle>Case Count Per Case Manager</CardTitle>
-                    <CardDescription>
-                        Showing total case count for each case manager
-                    </CardDescription>
+                    {activeChart == "RN" ? (
+                        <>
+                            <CardTitle>Case Managers</CardTitle>
+                            <CardDescription>
+                                {totals.rnQty} case managers today. Click a bar to view cases OR hover for overview.
+                            </CardDescription>
+                        </>
+                    ) : (
+                        <>
+                            <CardTitle>Case Manager Assistants</CardTitle>
+                            <CardDescription>
+                                {totals.cmaQty} cma's today. Click a bar to view cases OR hover for overview.
+                            </CardDescription>
+                        </>
+                    )}
+
                 </div>
                 <div className="flex">
-
                     {/* button for each different section. here would be CM and CMA */}
                     {["RN", "CMA"].map((key, idx) => {
                         const chart = key
@@ -237,7 +249,8 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
                                 <ChartTooltip
                                     content={({ active, payload, label }) => {
                                         if (!active || !payload || !payload.length) return null;
-                                        const data: ChartDataInterface = payload[0].payload; // this is your full data object!
+                                        // full data object
+                                        const data: ChartDataInterface = payload[0].payload;
                                         // depending on the chart type, a different set of analytics is produced
                                         let serviceCodeObject: Record<string, number> = {};
                                         if (activeChart == "RN") {
@@ -250,6 +263,7 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
                                                 <p className="font-bold text-gray-900 py-1 underline">{data.nameKey}</p>
                                                 <p className="text-gray-600">Cases: {data.dataKey}</p>
                                                 {serviceCodeObject &&
+                                                    // generate all service codes OR anticipated dispos
                                                     Object.entries(serviceCodeObject).map(([key, value]) => (
                                                         <div
                                                             key={key}
@@ -266,40 +280,20 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
                                 <Bar
                                     dataKey="dataKey"
                                     onClick={(barData: BarClickInterface) => {
-                                        console.log("Bar data here", barData)
                                         const fullData = barData?.fullData
-
                                         if (!fullData) return;
-                                        setSelectedData(barData);
+                                        setSelectedBarData(barData);
                                         setIsDrawerOpen(true);
                                     }}
                                 />
                             </BarChart>
                         </ChartContainer>
-                        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-                            <DrawerContent
-                                className="max-h-[90vh] h-[90vh] p-8 overflow-hidden will-change-auto transform-none"
-                            >
-                                <div className="flex flex-col h-full w-full">
-                                    <DrawerHeader>
-                                        <DrawerTitle className="text-lg font-semibold text-gray-900">
-                                            {selectedData?.nameKey}
-                                        </DrawerTitle>
-                                        <DrawerDescription>
-                                            {selectedData?.dataKey} Cases
-                                        </DrawerDescription>
-                                    </DrawerHeader>
-
-                                    {selectedData && (
-                                        <div className="flex-1 overflow-auto">
-                                            {selectedData.fullData && (
-                                                <CasesTable data={selectedData.fullData} />
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </DrawerContent>
-                        </Drawer>
+                        {/* this drawer is rendered when a bar is clicked */}
+                        <CustomBarDrawer
+                            isDrawerOpen={isDrawerOpen}
+                            setIsDrawerOpen={setIsDrawerOpen}
+                            selectedBarData={selectedBarData}
+                        />
                     </>
                 )}
 
