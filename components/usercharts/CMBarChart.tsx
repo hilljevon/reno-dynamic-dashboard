@@ -16,7 +16,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
-import { ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
+import { CasesInterface, ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
 import { convertToRechartStructure } from "@/controllers/rechart.controllers"
 
 
@@ -35,6 +35,9 @@ interface TotalCountInterface {
     RN: number,
     CMA: number
 }
+interface ServiceCodeInterface {
+    [key: string]: number
+}
 export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
     if (!casesPerRN || !casesPerCma) return null
     const [currentData, setCurrentData] = React.useState<ChartDataInterface[]>()
@@ -45,6 +48,32 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
     // determines which bar chart is active
     const [activeChart, setActiveChart] = React.useState<string>("RN")
     const [unfilteredRnCMAData, setUnfilteredRnCMAData] = React.useState<UnfilteredRnCMADataInterface>({ RN: null, CMA: null })
+    // here we need to generate all relevant RN analytics from the cases
+    const getRnAnalytics = (cases: CasesInterface[]) => {
+        const serviceCodes: ServiceCodeInterface = {}
+        for (let cs of cases) {
+            if (serviceCodes[cs.serviceCode]) {
+                serviceCodes[cs.serviceCode] = serviceCodes[cs.serviceCode] + 1
+            } else {
+                serviceCodes[cs.serviceCode] = 1;
+            }
+        }
+        const sortedServiceCodes = Object.fromEntries(
+            Object.entries(serviceCodes).sort(([a], [b]) => a.localeCompare(b))
+        );
+        return sortedServiceCodes
+    }
+    const getCMAAnalytics = (cases: CasesInterface[]) => {
+        const serviceCodes: ServiceCodeInterface = {}
+        for (let cs of cases) {
+            if (serviceCodes[cs.serviceCode]) {
+                serviceCodes[cs.serviceCode] = serviceCodes[cs.serviceCode] + 1
+            } else {
+                serviceCodes[cs.serviceCode] = 1;
+            }
+        }
+        return serviceCodes
+    }
     const filterData = (rechartRnData: ChartDataInterface[], rechartCMAData: ChartDataInterface[]) => {
         const newRnData = rechartRnData
             .filter(item => item.nameKey !== 'OTHER' && item.dataKey < 30)
@@ -167,20 +196,35 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
                                 )}
                             />
                             <ChartTooltip
-                                content={
-                                    <ChartTooltipContent
-                                        className="w-[150px]"
-                                        nameKey="dataKey"
-                                        labelFormatter={(value) => {
-                                            // return new Date(value).toLocaleDateString("en-US", {
-                                            //     month: "short",
-                                            //     day: "numeric",
-                                            //     year: "numeric",
-                                            // })
-                                            return value
-                                        }}
-                                    />
-                                }
+                                content={({ active, payload, label }) => {
+                                    if (!active || !payload || !payload.length) return null;
+                                    const data: ChartDataInterface = payload[0].payload; // this is your full data object!
+                                    // depending on the chart type, a different set of analytics is produced
+                                    let serviceCodeObject: Record<string, number> = {};
+                                    if (activeChart == "RN") {
+                                        serviceCodeObject = getRnAnalytics(data.fullData)
+                                        console.log("Service code object here", serviceCodeObject)
+                                    } else {
+                                        serviceCodeObject = getCMAAnalytics(data.fullData)
+                                    }
+                                    console.log("My data here", data)
+                                    return (
+                                        <div className="rounded-md bg-white p-3 shadow-md border border-gray-200 text-sm">
+                                            <p className="font-bold text-gray-900 py-1 underline">{data.nameKey}</p>
+                                            <p className="text-gray-600">Cases: {data.dataKey}</p>
+                                            {serviceCodeObject &&
+                                                Object.entries(serviceCodeObject).map(([key, value]) => (
+                                                    <div
+                                                        key={key}
+                                                        className="flex justify-between text-sm text-gray-700"
+                                                    >
+                                                        <span className="font-medium text-blue-700">{key}</span>
+                                                        <span>{value}</span>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    );
+                                }}
                             />
                             <Bar dataKey="dataKey" />
                         </BarChart>

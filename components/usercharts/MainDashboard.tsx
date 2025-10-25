@@ -35,6 +35,7 @@ const MainDashboard = () => {
             setCategorizedCases(categorized)
         }
     }, [casesToday])
+    console.log("Cases per RN", categorizedCases?.casesPerRN)
     return (
         <>
             <SiteHeader setCasesToday={setCasesToday} />
