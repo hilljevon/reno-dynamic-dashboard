@@ -23,6 +23,7 @@ import { caseBreakdown } from '@/controllers/excel.controllers'
 import { SectionCards } from '../section-cards'
 import { SiteHeader } from '../site-header'
 import { ROBarChart } from './ROBarChart'
+import { CasesTable } from '../datatable/CasesTable'
 
 
 const MainDashboard = () => {
@@ -67,7 +68,11 @@ const MainDashboard = () => {
                                     </AccordionItem>
                                 </Accordion>
                             </div>
-                            <DataTable data={data} />
+                            {casesToday && (
+                                <div className='flex w-full mx-auto px-8'>
+                                    <CasesTable data={casesToday} />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

@@ -1,5 +1,5 @@
 export interface CasesInterface {
-    caseId: string | null;
+    caseId: string;
     censusDate: Date | null;
     primaryMedicalHome: string;
     mtt: string;

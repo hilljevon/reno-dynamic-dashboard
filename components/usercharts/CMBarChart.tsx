@@ -18,9 +18,26 @@ import {
 } from "@/components/ui/chart"
 import { CasesInterface, ChartConfigInterface, ChartDataInterface, RechartDataConversionInterface, SingleCategoryInterface } from "@/controllers/interfaces"
 import { convertToRechartStructure } from "@/controllers/rechart.controllers"
+import { Button } from "../ui/button"
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from "@/components/ui/sheet"
+import { CasesTable } from "../datatable/CasesTable"
 
-
-
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer"
 
 interface CMArgumentInterface {
     casesPerRN: SingleCategoryInterface | null,
@@ -38,12 +55,30 @@ interface TotalCountInterface {
 interface ServiceCodeInterface {
     [key: string]: number
 }
+interface BarClickInterface {
+    background: any,
+    dataKey: number,
+    fill: string,
+    fullData: CasesInterface[],
+    height: number,
+    key: string,
+    nameKey: string,
+    payload: any,
+    tooltipPayload: any,
+    tooltipPosition: any,
+    value: number,
+    width: number,
+    x: number,
+    y: number
+}
 export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
     if (!casesPerRN || !casesPerCma) return null
     const [currentData, setCurrentData] = React.useState<ChartDataInterface[]>()
     const [currentChartConfig, setCurrentChartConfig] = React.useState<any>()
     const [rechartRnData, setRechartRnData] = React.useState<RechartDataConversionInterface>()
     const [rechartCmaData, setRechartCmaData] = React.useState<RechartDataConversionInterface>()
+    const [selectedData, setSelectedData] = React.useState<BarClickInterface | null>(null);
+    const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
     const [totals, setTotals] = React.useState<TotalCountInterface>({ RN: 0, CMA: 0 })
     // determines which bar chart is active
     const [activeChart, setActiveChart] = React.useState<string>("RN")
@@ -64,15 +99,18 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
         return sortedServiceCodes
     }
     const getCMAAnalytics = (cases: CasesInterface[]) => {
-        const serviceCodes: ServiceCodeInterface = {}
+        const anticipatedDispos: ServiceCodeInterface = {}
         for (let cs of cases) {
-            if (serviceCodes[cs.serviceCode]) {
-                serviceCodes[cs.serviceCode] = serviceCodes[cs.serviceCode] + 1
-            } else {
-                serviceCodes[cs.serviceCode] = 1;
+            if (cs.anticipatedDisposition && anticipatedDispos[cs.anticipatedDisposition]) {
+                anticipatedDispos[cs.anticipatedDisposition] = anticipatedDispos[cs.anticipatedDisposition] + 1
+            } else if (cs.anticipatedDisposition) {
+                anticipatedDispos[cs.anticipatedDisposition] = 1;
             }
         }
-        return serviceCodes
+        const sortedAnticipatedDispos = Object.fromEntries(
+            Object.entries(anticipatedDispos).sort(([a], [b]) => a.localeCompare(b))
+        );
+        return sortedAnticipatedDispos
     }
     const filterData = (rechartRnData: ChartDataInterface[], rechartCMAData: ChartDataInterface[]) => {
         const newRnData = rechartRnData
@@ -158,77 +196,109 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
             </CardHeader>
             <CardContent className="px-2 sm:p-6">
                 {currentChartConfig && (
-                    <ChartContainer
-                        config={currentChartConfig}
-                        className="aspect-auto h-[250px] w-full"
-                    >
-                        <BarChart
-                            accessibilityLayer
-                            data={currentData}
-                            margin={{
-                                left: 12,
-                                right: 12,
-                            }}
+                    <>
+                        <ChartContainer
+                            config={currentChartConfig}
+                            className="aspect-auto h-[250px] w-full"
                         >
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                                dataKey="nameKey"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={12}
-                                interval={0} // show every label
-                                height={60} // give labels extra space
-                                tick={({ x, y, payload }) => (
-                                    <text
-                                        x={x}
-                                        y={y + 20}
-                                        textAnchor="middle"
-                                        fontSize={9}
-                                        style={{
-                                            textOverflow: "ellipsis",
-                                            overflow: "hidden",
-                                        }}
-                                    >
-                                        {payload.value.length > 12
-                                            ? payload.value.slice(0, 10) + "…" // truncate long names
-                                            : payload.value}
-                                    </text>
-                                )}
-                            />
-                            <ChartTooltip
-                                content={({ active, payload, label }) => {
-                                    if (!active || !payload || !payload.length) return null;
-                                    const data: ChartDataInterface = payload[0].payload; // this is your full data object!
-                                    // depending on the chart type, a different set of analytics is produced
-                                    let serviceCodeObject: Record<string, number> = {};
-                                    if (activeChart == "RN") {
-                                        serviceCodeObject = getRnAnalytics(data.fullData)
-                                        console.log("Service code object here", serviceCodeObject)
-                                    } else {
-                                        serviceCodeObject = getCMAAnalytics(data.fullData)
-                                    }
-                                    console.log("My data here", data)
-                                    return (
-                                        <div className="rounded-md bg-white p-3 shadow-md border border-gray-200 text-sm">
-                                            <p className="font-bold text-gray-900 py-1 underline">{data.nameKey}</p>
-                                            <p className="text-gray-600">Cases: {data.dataKey}</p>
-                                            {serviceCodeObject &&
-                                                Object.entries(serviceCodeObject).map(([key, value]) => (
-                                                    <div
-                                                        key={key}
-                                                        className="flex justify-between text-sm text-gray-700"
-                                                    >
-                                                        <span className="font-medium text-blue-700">{key}</span>
-                                                        <span>{value}</span>
-                                                    </div>
-                                                ))}
-                                        </div>
-                                    );
+                            <BarChart
+                                accessibilityLayer
+                                data={currentData}
+                                margin={{
+                                    left: 12,
+                                    right: 12,
                                 }}
-                            />
-                            <Bar dataKey="dataKey" />
-                        </BarChart>
-                    </ChartContainer>
+                            >
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="nameKey"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={12}
+                                    interval={0} // show every label
+                                    height={60} // give labels extra space
+                                    tick={({ x, y, payload }) => (
+                                        <text
+                                            x={x}
+                                            y={y + 20}
+                                            textAnchor="middle"
+                                            fontSize={9}
+                                            style={{
+                                                textOverflow: "ellipsis",
+                                                overflow: "hidden",
+                                            }}
+                                        >
+                                            {payload.value.length > 12
+                                                ? payload.value.slice(0, 10) + "…" // truncate long names
+                                                : payload.value}
+                                        </text>
+                                    )}
+                                />
+                                <ChartTooltip
+                                    content={({ active, payload, label }) => {
+                                        if (!active || !payload || !payload.length) return null;
+                                        const data: ChartDataInterface = payload[0].payload; // this is your full data object!
+                                        // depending on the chart type, a different set of analytics is produced
+                                        let serviceCodeObject: Record<string, number> = {};
+                                        if (activeChart == "RN") {
+                                            serviceCodeObject = getRnAnalytics(data.fullData)
+                                        } else {
+                                            serviceCodeObject = getCMAAnalytics(data.fullData)
+                                        }
+                                        return (
+                                            <div className="rounded-md bg-white p-3 shadow-md border border-gray-200 text-sm">
+                                                <p className="font-bold text-gray-900 py-1 underline">{data.nameKey}</p>
+                                                <p className="text-gray-600">Cases: {data.dataKey}</p>
+                                                {serviceCodeObject &&
+                                                    Object.entries(serviceCodeObject).map(([key, value]) => (
+                                                        <div
+                                                            key={key}
+                                                            className="flex justify-between text-sm text-gray-700"
+                                                        >
+                                                            <span className="font-medium text-blue-700">{key}</span>
+                                                            <span>{value}</span>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        );
+                                    }}
+                                />
+                                <Bar
+                                    dataKey="dataKey"
+                                    onClick={(barData: BarClickInterface) => {
+                                        console.log("Bar data here", barData)
+                                        const fullData = barData?.fullData
+
+                                        if (!fullData) return;
+                                        setSelectedData(barData);
+                                        setIsDrawerOpen(true);
+                                    }}
+                                />
+                            </BarChart>
+                        </ChartContainer>
+                        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                            <DrawerContent className="max-h-[90vh] h-[90vh] overflow-hidden p-8">
+                                <div className="flex flex-col h-full w-full">
+                                    <DrawerHeader>
+                                        <DrawerTitle className="text-lg font-semibold text-gray-900">
+                                            {selectedData?.nameKey}
+                                        </DrawerTitle>
+                                        <DrawerDescription>
+                                            {selectedData?.dataKey} Cases
+                                        </DrawerDescription>
+                                    </DrawerHeader>
+
+                                    {selectedData && (
+                                        <div className="flex-1 overflow-auto">
+                                            {selectedData.fullData && (
+                                                <CasesTable data={selectedData.fullData} />
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </DrawerContent>
+                        </Drawer>
+                    </>
                 )}
 
             </CardContent>
