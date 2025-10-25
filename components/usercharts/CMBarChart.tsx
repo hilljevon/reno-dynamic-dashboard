@@ -277,7 +277,9 @@ export function CMBarChart({ casesPerRN, casesPerCma }: CMArgumentInterface) {
                             </BarChart>
                         </ChartContainer>
                         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-                            <DrawerContent className="max-h-[90vh] h-[90vh] overflow-hidden p-8">
+                            <DrawerContent
+                                className="max-h-[90vh] h-[90vh] p-8 overflow-hidden will-change-auto transform-none"
+                            >
                                 <div className="flex flex-col h-full w-full">
                                     <DrawerHeader>
                                         <DrawerTitle className="text-lg font-semibold text-gray-900">
